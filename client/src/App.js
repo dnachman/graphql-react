@@ -1,23 +1,37 @@
-import logo from './logo.svg';
+import React from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_USERS, VIEW_USERS } from './queries';
+import { Card, CardBody, CardHeader, CardSubtitle, Spinner } from 'reactstrap';
+
 import './App.css';
 
 function App() {
+  const getAllUsers = useQuery(GET_USERS);
+  const userInfo = useQuery(VIEW_USERS, { variables: { id: 1 } });
+
+  if (getAllUsers.loading || userInfo.loading) {
+    return <Spinner color='dark' />;
+  }
+
+  if (getAllUsers.error || userInfo.error) {
+    return <React.Fragment>Error :(</React.Fragment>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container'>
+      <Card>
+        <CardHeader>Query - Displaying all data</CardHeader>
+        <CardBody>
+          <pre>{JSON.stringify(getAllUsers.data, null, 2)}</pre>
+        </CardBody>
+      </Card>
+      <Card>
+        <CardHeader>Query - Displaying data with args</CardHeader>
+        <CardBody>
+          <CardSubtitle>Viewing a user by id</CardSubtitle>
+          <pre>{JSON.stringify(userInfo.data, null, 2)}</pre>
+        </CardBody>
+      </Card>
     </div>
   );
 }

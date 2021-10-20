@@ -2,8 +2,11 @@ const { query } = require('express');
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
+const cors = require('cors');
+const mysql = require('mysql2');
 
-var mysql = require('mysql');
+const app = express();
+app.use(cors());
 
 const schema = buildSchema(`
 	type User {
@@ -54,7 +57,17 @@ const root = {
     ),
 };
 
-const app = express();
+app.use((req, res, next) => {
+  req.mysqlDb = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'userapp',
+  });
+  req.mysqlDb.connect();
+  console.log('Database connected');
+  next();
+});
 
 app.use(
   '/graphql',
@@ -64,17 +77,6 @@ app.use(
     graphiql: true,
   })
 );
-
-app.use((req, res, next) => {
-  req.mysqlDb = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'userapp',
-  });
-  req.mysqlDb.connect();
-  next();
-});
 
 app.listen(4000);
 
